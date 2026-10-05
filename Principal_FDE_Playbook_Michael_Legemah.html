@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Principal FDE Playbook · Michael Legemah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&family=Raleway:ital,wght@0,500;0,700;0,800;1,500;1,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #2d2a2e;
+  --bg-deep:   #221f22;
+  --bg-card:   #3a3640;
+  --bg-surface:#332f34;
+  --border:    rgba(255,255,255,0.07);
+  --border-md: rgba(255,255,255,0.13);
+  --yellow:  #ffd866;
+  --pink:    #ff6188;
+  --cyan:    #78dce8;
+  --orange:  #fc9867;
+  --green:   #a9dc76;
+  --purple:  #ab9df2;
+  --text:    #fcfcfa;
+  --soft:    #c1b8c8;
+  --muted:   #78dce8;
+  --font-serif: 'Raleway', 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono:  'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-sans:  'Outfit', 'Segoe UI', Helvetica, Arial, sans-serif;
+
+  /* persona colors */
+  --c-dev:  var(--cyan);
+  --c-arch: var(--purple);
+  --c-biz:  var(--green);
+  --c-up:   var(--yellow);
+
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark; } }
+:root[data-theme="dark"] { color-scheme: dark; }
+html { scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 80px); scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+*, *::before, *::after { box-sizing: inherit; }
+
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: var(--font-sans); font-weight: 300; font-size: 17px; line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--cyan); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--yellow); outline-offset: 3px; border-radius: 4px; }
+strong { color: var(--text); font-weight: 500; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+/* top bar */
+.topbar { border-bottom: 1px solid var(--border); background: var(--bg-deep); }
+.topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-family: var(--font-serif); font-weight: 700; letter-spacing: .01em; }
+.brand-mark { width: 30px; height: 30px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border-md); display: grid; place-items: center; font-family: var(--font-mono); font-size: 13px; color: var(--yellow); }
+.topbar .status { font-family: var(--font-mono); font-size: 12.5px; color: var(--green); }
+
+/* hero */
+.hero { padding: 64px 0 40px; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 48px; align-items: start; }
+.kicker { font-family: var(--font-mono); font-size: 13px; color: var(--muted); margin: 0 0 18px; }
+h1 { font-family: var(--font-serif); font-weight: 800; font-size: clamp(40px, 6vw, 66px); line-height: 1.02; letter-spacing: -.02em; margin: 0 0 22px; }
+h1 em { font-style: italic; font-weight: 500; color: var(--yellow); }
+.thesis { font-family: var(--font-serif); font-weight: 500; font-style: italic; font-size: clamp(19px, 2vw, 22px); line-height: 1.45; border-left: 3px solid var(--green); padding-left: 16px; margin: 0 0 22px; max-width: 44ch; }
+.lede { color: var(--soft); max-width: 48ch; margin: 0 0 28px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; color: var(--soft); padding: 0; margin: 0; list-style: none; }
+.legend li { display: flex; align-items: center; gap: 8px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex: none; display: inline-block; }
+
+/* window chrome panels (matrix + diagrams) */
+.panel { background: var(--bg-deep); border: 1px solid var(--border-md); border-radius: 14px; overflow: hidden; }
+.panel-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 12.5px; color: var(--soft); }
+.panel-head i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.panel-head .fname { margin-left: 10px; }
+.panel-scroll { overflow-x: auto; }
+.panel-foot { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 10px 16px; border-top: 1px solid var(--border); font-size: 13px; color: var(--soft); }
+.panel svg { display: block; width: 100%; height: auto; }
+.panel-scroll svg { min-width: 680px; }
+.dg-cap { padding: 12px 16px 14px; border-top: 1px solid var(--border); color: var(--soft); font-size: 14.5px; line-height: 1.55; }
+figure.diagram { margin: 18px 0 22px; }
+
+/* matrix svg text */
+.mx text { font-family: var(--font-sans); }
+.mx .ql { font-family: var(--font-serif); font-weight: 700; font-size: 15px; }
+.mx .ax { font-family: var(--font-mono); font-size: 11.5px; fill: var(--soft); }
+.mx .pl { font-size: 12.5px; fill: var(--text); }
+.mx .pt { cursor: default; }
+@media (prefers-reduced-motion: no-preference) {
+  .mx .pt { animation: pop .5s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * 90ms + 250ms); transform-box: fill-box; transform-origin: center; }
+  @keyframes pop { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
+}
+
+/* reminders */
+.reminders { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 8px 0 40px; }
+.reminder { border-left: 3px solid var(--c, var(--purple)); background: var(--bg-surface); border-radius: 0 10px 10px 0; padding: 16px 20px; }
+.reminder h2 { font-family: var(--font-serif); font-size: 17px; font-weight: 700; margin: 0 0 4px; color: var(--c, var(--purple)); }
+.reminder p { margin: 0; color: var(--soft); font-size: 15.5px; }
+
+/* toolbar */
+.toolbar { position: sticky; z-index: 5; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-block: 1px solid var(--border); top: env(safe-area-inset-top, 0px); }
+.toolbar .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding-block: 12px; }
+.toolbar input[type="search"] { flex: 1 1 220px; min-width: 0; background: var(--bg-deep); border: 1px solid var(--border-md); color: var(--text); border-radius: 8px; padding: 9px 12px; font: inherit; font-size: 15px; }
+.toolbar input::placeholder { color: #8f8599; }
+.btn { background: var(--bg-card); color: var(--text); border: 1px solid var(--border-md); border-radius: 8px; padding: 8px 14px; font: inherit; font-size: 14.5px; cursor: pointer; text-decoration: none; display: inline-block; line-height: 1.4; }
+.btn:hover { border-color: var(--soft); }
+.chip { color: var(--soft); border: 1px solid var(--border-md); border-radius: 999px; padding: 6px 12px; font-size: 13.5px; display: inline-flex; align-items: center; gap: 7px; text-decoration: none; }
+.chip:hover { color: var(--text); border-color: var(--c); }
+.chip .dot { background: var(--c); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* parts */
+.part { padding: 44px 0 8px; }
+.part-head { display: grid; grid-template-columns: minmax(0,1fr); gap: 4px; margin-bottom: 20px; }
+.part-head .kicker { margin: 0; }
+.part-head h2 { font-family: var(--font-serif); font-weight: 800; font-size: clamp(28px, 3.6vw, 38px); line-height: 1.1; letter-spacing: -.01em; margin: 0; }
+.part-head p { color: var(--soft); margin: 6px 0 0; max-width: 70ch; }
+.part.up .part-head h2 { color: var(--yellow); }
+
+.blocks { display: grid; grid-template-columns: minmax(0,1fr); gap: 18px; }
+.blocks > *, .trig > *, .items > * { min-width: 0; }
+.block { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 14px; border-top: 3px solid var(--c, var(--border-md)); }
+.block[open] { border-color: var(--border-md); border-top-color: var(--c, var(--border-md)); }
+.block > summary { list-style: none; cursor: pointer; padding: 22px 24px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 20px; }
+.block > summary::-webkit-details-marker { display: none; }
+.block-meta { grid-column: 1 / -1; font-family: var(--font-mono); font-size: 12.5px; color: var(--c, var(--muted)); }
+.block h3 { font-family: var(--font-serif); font-weight: 700; font-size: clamp(22px, 2.6vw, 27px); line-height: 1.2; margin: 0; }
+.toggle { align-self: start; font-family: var(--font-mono); font-size: 12.5px; color: var(--soft); border: 1px solid var(--border-md); border-radius: 6px; padding: 3px 9px; white-space: nowrap; }
+.block[open] .toggle .o { display: none; }
+.block:not([open]) .toggle .c { display: none; }
+.hook { grid-column: 1 / -1; margin: 6px 0 0; font-size: 18px; line-height: 1.55; color: var(--text); max-width: 74ch; font-weight: 400; }
+.block-body { padding: 6px 24px 26px; border-top: 1px solid var(--border); }
+.block-body > h4, .sub { font-family: var(--font-serif); font-weight: 700; font-size: 18px; margin: 26px 0 10px; color: var(--c, var(--text)); }
+.block-body > p { color: var(--soft); max-width: 74ch; }
+
+/* signal / item lists */
+.items { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.item { background: var(--bg-deep); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.item b { display: block; font-weight: 500; font-size: 16px; color: var(--text); margin-bottom: 3px; }
+.item p { margin: 0; color: var(--soft); font-size: 15.5px; line-height: 1.55; }
+.item p + p { margin-top: 6px; }
+.item .where { font-family: var(--font-mono); font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+
+/* checklist */
+.check { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 4px 12px; align-items: start; }
+.check input { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; margin: 3px 0 0; border: 1.5px solid var(--border-md); border-radius: 5px; background: var(--bg-surface); cursor: pointer; display: grid; place-items: center; }
+.check input:checked { background: var(--green); border-color: var(--green); }
+.check input:checked::after { content: ""; width: 10px; height: 5px; border-left: 2px solid var(--bg-deep); border-bottom: 2px solid var(--bg-deep); transform: rotate(-45deg) translate(1px,-1px); }
+.check label { cursor: pointer; }
+.check-count { font-family: var(--font-mono); font-size: 12.5px; color: var(--orange); margin: 0 0 10px; }
+.check-count.hot { color: var(--green); }
+
+/* questions */
+.qs { counter-reset: q; list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.qs li { counter-increment: q; position: relative; padding: 14px 16px 14px 52px; background: var(--bg-deep); border-radius: 10px; border: 1px solid var(--border); }
+.qs li::before { content: counter(q); position: absolute; left: 16px; top: 13px; font-family: var(--font-mono); font-size: 13px; color: var(--yellow); width: 24px; height: 24px; border: 1px solid rgba(255,216,102,.45); border-radius: 50%; display: grid; place-items: center; }
+.qs .say { display: block; font-size: 17px; color: var(--text); font-weight: 400; line-height: 1.5; }
+.qs .say::before { content: "“"; color: var(--yellow); font-family: var(--font-serif); font-weight: 800; }
+.qs .say::after { content: "”"; color: var(--yellow); font-family: var(--font-serif); font-weight: 800; }
+.qs .why { display: block; color: var(--soft); font-size: 15px; margin-top: 6px; line-height: 1.55; }
+
+/* tables */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--border-md); border-radius: 10px; background: var(--bg-deep); margin: 6px 0 4px; }
+table.t { width: 100%; border-collapse: collapse; min-width: 720px; font-size: 15px; }
+.t th, .t td { text-align: left; vertical-align: top; padding: 12px 14px; border-bottom: 1px solid var(--border); line-height: 1.5; }
+.t thead th { font-family: var(--font-mono); font-weight: 400; font-size: 12px; color: var(--muted); background: var(--bg-deep); }
+.t tbody tr:last-child th, .t tbody tr:last-child td { border-bottom: 0; }
+.t tbody th { font-weight: 500; color: var(--c, var(--text)); font-family: var(--font-serif); font-size: 15.5px; min-width: 150px; }
+.t td { color: var(--soft); }
+.t td strong { color: var(--text); }
+.t .say { color: var(--text); font-weight: 400; }
+.t .fail { color: var(--pink); }
+
+/* gates scorer */
+.gates { display: grid; gap: 8px; }
+.gate { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 2px 12px; background: var(--bg-deep); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; cursor: pointer; }
+.gate:has(input:checked) { border-color: rgba(169,220,118,.5); }
+.gate input { grid-row: span 2; appearance: none; -webkit-appearance: none; width: 20px; height: 20px; margin: 3px 0 0; border: 1.5px solid var(--border-md); border-radius: 5px; background: var(--bg-surface); cursor: pointer; display: grid; place-items: center; }
+.gate input:checked { background: var(--green); border-color: var(--green); }
+.gate input:checked::after { content: ""; width: 10px; height: 5px; border-left: 2px solid var(--bg-deep); border-bottom: 2px solid var(--bg-deep); transform: rotate(-45deg) translate(1px,-1px); }
+.gate b { font-weight: 500; color: var(--text); }
+.gate span { color: var(--soft); font-size: 15px; line-height: 1.5; }
+.verdict { margin-top: 12px; border-radius: 10px; padding: 14px 16px; border-left: 3px solid var(--vc, var(--pink)); background: var(--bg-card); }
+.verdict .k { font-family: var(--font-mono); font-size: 12.5px; color: var(--vc, var(--pink)); display: block; }
+.verdict p { margin: 2px 0 0; color: var(--text); font-weight: 400; }
+
+/* quadrant cards */
+.quads { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+.quad { border-left: 3px solid var(--c); background: var(--bg-deep); border-radius: 0 10px 10px 0; padding: 12px 16px; }
+.quad b { font-family: var(--font-serif); font-weight: 700; color: var(--c); display: block; }
+.quad small { font-family: var(--font-mono); font-size: 11.5px; color: var(--soft); display: block; margin-bottom: 4px; }
+.quad p { margin: 0; color: var(--soft); font-size: 15px; line-height: 1.5; }
+
+/* steps */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 0 14px; position: relative; padding-bottom: 18px; }
+.steps li::before { content: counter(s); grid-row: span 2; width: 32px; height: 32px; border-radius: 50%; background: var(--bg-deep); border: 1px solid var(--c, var(--yellow)); color: var(--c, var(--yellow)); font-family: var(--font-mono); font-size: 13.5px; display: grid; place-items: center; position: relative; z-index: 1; }
+.steps li::after { content: ""; position: absolute; left: 15.5px; top: 32px; bottom: 0; width: 1px; background: var(--border-md); }
+.steps li:last-child::after { display: none; }
+.steps b { font-weight: 500; font-size: 16.5px; line-height: 2; }
+.steps p { margin: 0; color: var(--soft); font-size: 15.5px; max-width: 70ch; }
+
+/* templates */
+.tpl { background: var(--bg-deep); border: 1px solid var(--border-md); border-radius: 10px; overflow: hidden; margin: 0 0 14px; }
+.tpl-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 12.5px; color: var(--soft); }
+.tpl-head .copy { font-family: var(--font-mono); font-size: 12px; background: var(--bg-card); color: var(--text); border: 1px solid var(--border-md); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.tpl-head .copy.done { background: var(--green); color: var(--bg-deep); border-color: var(--green); }
+.tpl pre { margin: 0; padding: 14px 16px; white-space: pre-wrap; word-wrap: break-word; font-family: var(--font-mono); font-size: 13.5px; line-height: 1.65; color: var(--text); }
+.tpl pre .ph { color: var(--orange); }
+
+/* phrasing triggers */
+.trig { display: grid; gap: 14px; }
+.tg { background: var(--bg-deep); border: 1px solid var(--border); border-left: 3px solid var(--c, var(--yellow)); border-radius: 0 12px 12px 0; padding: 16px 18px; }
+.tg-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 14px; align-items: baseline; }
+.tg-top b { font-family: var(--font-serif); font-weight: 700; font-size: 18px; color: var(--c, var(--yellow)); }
+.tg-top .opens { font-family: var(--font-mono); font-size: 12px; color: var(--green); }
+.tg .see { color: var(--soft); font-size: 15.5px; margin: 6px 0 10px; max-width: 76ch; }
+.tg .line { margin: 0; padding: 12px 14px; background: var(--bg-surface); border-radius: 8px; font-size: 16.5px; line-height: 1.55; color: var(--text); font-weight: 400; }
+.tg .line::before { content: "“"; color: var(--yellow); font-family: var(--font-serif); font-weight: 800; }
+.tg .line::after { content: "”"; color: var(--yellow); font-family: var(--font-serif); font-weight: 800; }
+.tg .why { margin: 8px 0 0; color: var(--soft); font-size: 14.5px; }
+
+/* swap list */
+.swap { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); border: 1px solid var(--border-md); border-radius: 10px; overflow: hidden; }
+.swap > div { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 15.5px; }
+.swap > div:nth-last-child(-n+2) { border-bottom: 0; }
+.swap .no { background: rgba(255,97,136,.07); color: var(--soft); text-decoration: line-through; text-decoration-color: rgba(255,97,136,.6); }
+.swap .yes { background: rgba(169,220,118,.07); color: var(--text); border-left: 1px solid var(--border-md); }
+.swap .hd { font-family: var(--font-mono); font-size: 12px; text-decoration: none; }
+.swap .no.hd { color: var(--pink); } .swap .yes.hd { color: var(--green); }
+
+/* before / after */
+.ba { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); border: 1px solid var(--border-md); border-radius: 10px; overflow: hidden; margin: 0 0 14px; }
+.ba > div { padding: 14px 16px; }
+.ba > div + div { border-left: 1px solid var(--border-md); }
+.ba .lbl { display: block; font-family: var(--font-mono); font-size: 12px; margin-bottom: 4px; }
+.ba .bef { background: rgba(255,97,136,.07); } .ba .bef .lbl { color: var(--pink); }
+.ba .aft { background: rgba(169,220,118,.07); } .ba .aft .lbl { color: var(--green); }
+.ba p { margin: 0; font-size: 15.5px; line-height: 1.55; }
+.ba .bef p { color: var(--soft); }
+.ba .aft p { color: var(--text); font-weight: 400; }
+.ba-title { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin: 18px 0 6px; }
+
+/* formula */
+.formula { background: var(--bg-deep); border: 1px solid var(--border-md); border-radius: 10px; padding: 14px 16px; font-family: var(--font-mono); font-size: 14px; line-height: 1.8; color: var(--text); overflow-x: auto; }
+.formula .v { color: var(--yellow); } .formula .m { color: var(--pink); } .formula .c { color: #8f8599; }
+
+/* guardrail callout */
+.callout { border-left: 3px solid var(--pink); background: rgba(255,97,136,.06); border-radius: 0 10px 10px 0; padding: 14px 18px; margin: 18px 0 0; }
+.callout b { font-family: var(--font-serif); color: var(--pink); display: block; margin-bottom: 4px; }
+.callout ul { margin: 0; padding-left: 18px; color: var(--soft); font-size: 15.5px; }
+.callout li + li { margin-top: 6px; }
+
+/* habits */
+.habits { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+.habit { background: var(--bg-deep); border-top: 3px solid var(--c); border-radius: 0 0 10px 10px; padding: 16px 18px; }
+.habit .when { font-family: var(--font-mono); font-size: 12px; color: var(--c); }
+.habit b { font-family: var(--font-serif); font-weight: 700; font-size: 18px; display: block; margin: 2px 0 6px; }
+.habit p { margin: 0 0 8px; color: var(--soft); font-size: 15.5px; line-height: 1.55; }
+.habit p:last-child { margin-bottom: 0; }
+
+.persona-tag { font-family: var(--font-mono); font-size: 11.5px; border-radius: 4px; padding: 1px 6px; border: 1px solid; }
+.empty { display: none; text-align: center; color: var(--soft); padding: 32px; border: 1px dashed var(--border-md); border-radius: 14px; margin-top: 24px; }
+
+footer { border-top: 1px solid var(--border); background: var(--bg-deep); margin-top: 56px; }
+footer .wrap { padding-block: 22px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; font-size: 14px; color: var(--soft); }
+footer a { color: var(--soft); }
+
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 32px; }
+  .reminders, .habits, .quads, .two { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .ba { grid-template-columns: 1fr; } .ba > div + div { border-left: 0; border-top: 1px solid var(--border-md); }
+  .swap { grid-template-columns: 1fr; } .swap .yes { border-left: 0; } .swap > div:nth-last-child(2) { border-bottom: 1px solid var(--border); }
+  .swap .hd.yes { display: none; }
+}
+@media (max-width: 520px) {
+  body { font-size: 16px; }
+  .wrap { padding: 0 16px; }
+  .hero { padding-top: 40px; }
+  .block > summary { padding: 18px; }
+  .block-body { padding: 4px 18px 22px; }
+  .topbar .status { display: none; }
+}
+@media print {
+  .toolbar, .toggle, .copy { display: none; }
+  details > *:not(summary) { display: block !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="https://mleg.tech" target="_blank" rel="noopener"><span class="brand-mark">ML</span>Michael Legemah</a>
+    <span class="status">&gt;&gt;&gt; deploy_mode = "embedded"</span>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="kicker">fde_playbook.md · principal forward deployed engineer</p>
+      <h1>Ship the code, <em>grow the account</em></h1>
+      <p class="thesis">The best expansion pitch an embedded engineer ever makes is a problem they noticed while fixing something else, with the customer's own number attached.</p>
+      <p class="lede">A working playbook for FDEs inside financial services and healthcare accounts: how to spot AI opportunities in the codebase, qualify them honestly, pitch them as a peer, and blend developer, architect and consultant into one way of working.</p>
+      <ul class="legend">
+        <li><span class="dot" style="background:var(--c-up)"></span>Expansion</li>
+        <li><span class="dot" style="background:var(--c-dev)"></span>Developer</li>
+        <li><span class="dot" style="background:var(--c-arch)"></span>Architect</li>
+        <li><span class="dot" style="background:var(--c-biz)"></span>Consultant</li>
+      </ul>
+    </div>
+
+    <div class="panel" aria-label="Opportunity prioritization matrix">
+      <div class="panel-head">
+        <i style="background:var(--pink)"></i><i style="background:var(--yellow)"></i><i style="background:var(--green)"></i>
+        <span class="fname">opportunity_matrix.py</span>
+      </div>
+      <svg class="mx" viewBox="0 0 560 420" role="img" aria-labelledby="mxTitle mxDesc">
+        <title id="mxTitle">Impact versus feasibility matrix</title>
+        <desc id="mxDesc">Nine example financial services and healthcare AI use cases plotted by business impact and implementation feasibility, across four quadrants: quick wins, strategic bets, fill-ins and money pits.</desc>
+        <rect x="60" y="20" width="240" height="175" fill="rgba(171,157,242,.06)"/>
+        <rect x="300" y="20" width="240" height="175" fill="rgba(169,220,118,.08)"/>
+        <rect x="60" y="195" width="240" height="175" fill="rgba(255,97,136,.05)"/>
+        <rect x="300" y="195" width="240" height="175" fill="rgba(120,220,232,.05)"/>
+        <line x1="300" y1="20" x2="300" y2="370" stroke="rgba(255,255,255,.13)" stroke-dasharray="4 4"/>
+        <line x1="60" y1="195" x2="540" y2="195" stroke="rgba(255,255,255,.13)" stroke-dasharray="4 4"/>
+        <line x1="60" y1="370" x2="545" y2="370" stroke="#c1b8c8" stroke-width="1"/>
+        <line x1="60" y1="15" x2="60" y2="370" stroke="#c1b8c8" stroke-width="1"/>
+        <path d="M545 366 L553 370 L545 374 Z" fill="#c1b8c8"/>
+        <path d="M56 15 L60 7 L64 15 Z" fill="#c1b8c8"/>
+        <text class="ql" x="72" y="42" fill="#ab9df2">Strategic bets</text>
+        <text class="ql" x="528" y="42" text-anchor="end" fill="#a9dc76">Quick wins</text>
+        <text class="ql" x="72" y="360" fill="#ff6188">Money pits</text>
+        <text class="ql" x="528" y="360" text-anchor="end" fill="#78dce8">Fill-ins</text>
+        <text class="ax" x="300" y="398" text-anchor="middle">implementation feasibility</text>
+        <text class="ax" x="300" y="413" text-anchor="middle">data ready · integration · regulatory risk</text>
+        <text class="ax" transform="translate(30 195) rotate(-90)" text-anchor="middle">business impact ($ · risk · strategic)</text>
+
+        <g class="pt" style="--i:0"><circle cx="470" cy="85" r="7" fill="#a9dc76"/><text class="pl" x="459" y="89" text-anchor="end">KYC document extraction</text><title>Quick win: LLM extraction from onboarding documents with confidence-based human review</title></g>
+        <g class="pt" style="--i:1"><circle cx="330" cy="125" r="7" fill="#a9dc76"/><text class="pl" x="341" y="129">Prior-auth packet summary</text><title>Quick win: summarize clinical documentation against payer criteria for reviewers</title></g>
+        <g class="pt" style="--i:2"><circle cx="490" cy="165" r="7" fill="#a9dc76"/><text class="pl" x="479" y="169" text-anchor="end">Call-center agent assist</text><title>Quick win: RAG over policy and benefits documents for live agents</title></g>
+        <g class="pt" style="--i:3"><circle cx="240" cy="75" r="7" fill="#ab9df2"/><text class="pl" x="229" y="79" text-anchor="end">SAR narrative drafting</text><title>Strategic bet: draft AML suspicious activity report narratives for investigators</title></g>
+        <g class="pt" style="--i:4"><circle cx="140" cy="135" r="7" fill="#ab9df2"/><text class="pl" x="151" y="139">Clinical note → coding</text><title>Strategic bet: suggest ICD-10 and CPT codes from clinical notes</title></g>
+        <g class="pt" style="--i:5"><circle cx="490" cy="245" r="7" fill="#78dce8"/><text class="pl" x="479" y="249" text-anchor="end">Internal policy chatbot</text><title>Fill-in: useful, low risk, small dollar impact</title></g>
+        <g class="pt" style="--i:6"><circle cx="350" cy="305" r="7" fill="#78dce8"/><text class="pl" x="361" y="309">Meeting summarizer</text><title>Fill-in: commodity capability, often already licensed</title></g>
+        <g class="pt" style="--i:7"><circle cx="120" cy="250" r="7" fill="#ff6188"/><text class="pl" x="131" y="254">Custom fine-tuned LLM</text><title>Money pit: training a bespoke model for a 200-user internal tool</title></g>
+        <g class="pt" style="--i:8"><circle cx="250" cy="310" r="7" fill="#ff6188"/><text class="pl" x="239" y="314" text-anchor="end">Autonomous claim denials</text><title>Money pit: fully automated adverse decisions with no human review</title></g>
+      </svg>
+      <div class="panel-foot">
+        <span><span class="dot" style="background:var(--green)"></span> Pitch first</span>
+        <span><span class="dot" style="background:var(--purple)"></span> Earn the right, then pitch</span>
+        <span><span class="dot" style="background:var(--cyan)"></span> Bundle, don't lead</span>
+        <span><span class="dot" style="background:var(--pink)"></span> Talk them out of it</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="reminders">
+    <div class="reminder" style="--c:var(--green)">
+      <h2>Fix first, then notice</h2>
+      <p>Your right to suggest anything comes from the ticket you just closed. An expansion idea from someone who hasn't shipped yet sounds like a sales script.</p>
+    </div>
+    <div class="reminder" style="--c:var(--yellow)">
+      <h2>Their number, not yours</h2>
+      <p>Quote the customer's own queue age, handle time or error rate. A vendor benchmark invites a debate; their own dashboard ends one.</p>
+    </div>
+    <div class="reminder" style="--c:var(--pink)">
+      <h2>Always leave an exit</h2>
+      <p>"I don't know if this is a priority" costs nothing and keeps you a peer. Pressure turns an embedded engineer into a vendor in a single meeting.</p>
+    </div>
+  </div>
+</div>
+
+<nav class="toolbar" aria-label="Playbook navigation">
+  <div class="wrap">
+    <input type="search" id="q" placeholder="Search, e.g. data silo, latency, prior auth, Slack" aria-label="Search the playbook">
+    <div class="chips">
+      <a class="chip" href="#part1" style="--c:var(--cyan)"><span class="dot"></span>Upsell cheatsheet</a>
+      <a class="chip" href="#upsell" style="--c:var(--yellow)"><span class="dot"></span>Upselling via engineering</a>
+      <a class="chip" href="#part2" style="--c:var(--purple)"><span class="dot"></span>Skill mix</a>
+    </div>
+    <button class="btn" id="expandBtn">Expand all</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- =================== PART 1 =================== -->
+<section class="part" id="part1">
+  <div class="part-head">
+    <p class="kicker">part_1 · discovery → qualification → proposal</p>
+    <h2>The AI upsell and expansion cheatsheet</h2>
+    <p>Three phases, run in order. Most failed expansions skip the middle one: they go straight from "I noticed something" to "here's a proposal" without checking whether the idea deserves a customer's budget.</p>
+  </div>
+
+  <div class="blocks">
+
+  <!-- Discovery -->
+  <details class="block" id="discovery" style="--c:var(--cyan)" open>
+    <summary>
+      <span class="block-meta">phase 1 · discovery</span>
+      <h3>Spotting the signals</h3>
+      <span class="toggle"><span class="o">Open</span><span class="c">Close</span></span>
+      <p class="hook">You already have the best discovery tool in the account: read access to their repos, their Jira and their runbooks. Code smells and operational friction tell you where AI pays off long before a stakeholder says the word "AI."</p>
+    </summary>
+    <div class="block-body">
+      <h4 class="sub">Code smells and friction checklist</h4>
+      <p class="check-count" id="sigCount">0 of 8 signals spotted in this account</p>
+      <ul class="items" id="signals">
+        <li class="item check"><input type="checkbox" id="sg1" data-k="sg1"><label for="sg1"><span class="where">repo: /rules, /adjudication, Drools or Blaze files</span><b>A rules engine that only ever grows</b><p>Fraud scoring, claims adjudication or eligibility logic with hundreds or thousands of hand-tuned rules, where every new edge case adds another rule and nobody deletes old ones. Check the commit history: if rule changes are the most frequent commit type and false positives keep climbing, the rules are compensating for a pattern a model could learn.</p><p>The play is rarely "replace the rules." Keep them as hard guardrails for regulated decisions and put an ML classifier or LLM-assisted triage in front of them to handle the ambiguous middle that the rules keep getting wrong.</p></label></li>
+        <li class="item check"><input type="checkbox" id="sg2" data-k="sg2"><label for="sg2"><span class="where">storage: S3 buckets, SharePoint, fax servers, call recordings</span><b>An unstructured data graveyard</b><p>Terabytes of scanned referrals, faxed prior-auth packets, loan files, call transcripts or adjuster notes that are stored for compliance and never read again. Look at bucket sizes against query logs; huge storage with near-zero reads means the data has value nobody can reach.</p><p>This is the classic setup for document AI extraction into structured fields plus RAG over the corpus, with a vector database and access controls that respect PHI and PII classification from day one.</p></label></li>
+        <li class="item check"><input type="checkbox" id="sg3" data-k="sg3"><label for="sg3"><span class="where">ops: Jira "backlog" tickets, RPA bot failures, swivel-chair screens</span><b>High-toil manual data extraction</b><p>Operations staff reading a PDF in one window and typing fields into a core banking system, EHR or claims platform in another. RPA bots that break every time a form layout changes are the same signal in disguise: someone already paid to automate this and the brittle approach failed.</p><p>Intelligent document processing with LLM structured output and confidence thresholds lets high-confidence records flow straight through, while low-confidence ones land in a human review queue that is much smaller than today's.</p></label></li>
+        <li class="item check"><input type="checkbox" id="sg4" data-k="sg4"><label for="sg4"><span class="where">repo: regex_patterns.py, parsers/, a 2,000-line utils file</span><b>Regex doing the work of language understanding</b><p>Giant regex libraries parsing clinical notes, wire transfer memos or free-text complaint fields. They work on the examples they were written for and silently miss everything else, which is worse than failing loudly in a regulated workflow.</p><p>Named entity extraction or schema-constrained LLM output, backed by an evaluation set built from the regex's own historical misses, is a clean before-and-after story.</p></label></li>
+        <li class="item check"><input type="checkbox" id="sg5" data-k="sg5"><label for="sg5"><span class="where">ops: tier-2 queues, SLA breach reports, "ask Priya" Slack culture</span><b>Escalation queues with a long tail</b><p>Tier-2 analysts or nurse reviewers who answer each case by searching four systems and two policy PDFs. When answers depend on which senior person you ask, the knowledge exists but isn't retrievable.</p><p>Agent assist built on retrieval over policies, benefit documents and past resolutions cuts handle time and makes answers consistent, which compliance teams care about as much as speed.</p></label></li>
+        <li class="item check"><input type="checkbox" id="sg6" data-k="sg6"><label for="sg6"><span class="where">security: DLP alerts, blocked domains, browser extensions</span><b>Shadow AI usage</b><p>Data loss prevention alerts showing employees pasting member or account data into consumer chatbots. This is the strongest signal on the list because it proves demand and exposes risk at the same time.</p><p>The response is a governed enterprise gateway with audit logging, redaction and approved models, which security will sponsor because it closes a gap they're already worried about.</p></label></li>
+        <li class="item check"><input type="checkbox" id="sg7" data-k="sg7"><label for="sg7"><span class="where">ops: recurring reports, templated Word docs, analyst calendars</span><b>A report factory</b><p>Analysts spending days each cycle assembling credit memos, quality-of-care reports, SAR narratives or board risk summaries from the same handful of sources. The structure repeats; only the facts change.</p><p>Grounded generation with citations back to source records turns days into a review task of an hour or two, and the citations are what makes it acceptable to model risk and audit.</p></label></li>
+        <li class="item check"><input type="checkbox" id="sg8" data-k="sg8"><label for="sg8"><span class="where">analytics: intranet search logs, zero-click queries</span><b>Search nobody trusts</b><p>Internal keyword search with low click-through and lots of reformulated queries, while people message experts directly instead. That pattern means the content exists but lexical search can't match how people ask.</p><p>Hybrid retrieval (BM25 plus vector search plus a reranker) is a low-risk first step that also builds the retrieval layer every later use case will need.</p></label></li>
+      </ul>
+
+      <h4 class="sub">Five high-intent discovery questions</h4>
+      <p>Ask these in casual syncs as often as formal ones. Each is built to surface a number, an owner or a blocker, which are the three things qualification needs.</p>
+      <ol class="qs">
+        <li><span class="say">If you could delete one manual step from this workflow tomorrow, which would it be, and who does it today?</span><span class="why">Forces a specific step and a named team, which turns a vague wish into something you can time and cost. The "who" also tells you whose day gets better, which is your future champion.</span></li>
+        <li><span class="say">Where does work wait? Which queue has the oldest items, and what happens when something sits past SLA?</span><span class="why">Waiting is where cost hides in prior auth, claims and onboarding. SLA breaches usually carry a penalty, a regulatory clock or customer churn you can put a dollar figure on.</span></li>
+        <li><span class="say">What data do you wish you could ask questions of, but it's stuck in documents, transcripts or another team's system?</span><span class="why">Surfaces unstructured data and silos in one question. Listen for the word "another team's," because cross-team data is where governance work, and expansion scope, tends to sit.</span></li>
+        <li><span class="say">When this process gets something wrong, who finds out, how long does it take, and what does it cost you?</span><span class="why">Gives you the error rate, detection lag and cost per error, the three inputs to a risk-reduction ROI. In healthcare and banking the answer often involves a regulator or an audit finding, which raises urgency.</span></li>
+        <li><span class="say">What have you already tried with AI here, and what stopped it?</span><span class="why">Saves you from pitching what already failed and tells you the real blocker: data access, risk review, budget or results. Each blocker points to a different first step.</span></li>
+      </ol>
+    </div>
+  </details>
+
+  <!-- Qualification -->
+  <details class="block" id="qualify" style="--c:var(--purple)">
+    <summary>
+      <span class="block-meta">phase 2 · qualification &amp; value mapping</span>
+      <h3>Filtering "AI for the sake of AI" from real ROI</h3>
+      <span class="toggle"><span class="o">Open</span><span class="c">Close</span></span>
+      <p class="hook">Every idea goes through five gates before it reaches a stakeholder. Ideas that pass get plotted on impact versus feasibility; ideas that fail get parked without regret, which is what keeps your credibility for the ones that matter.</p>
+    </summary>
+    <div class="block-body">
+      <h4 class="sub">The five-gate filter</h4>
+      <p>Tick the gates the opportunity you're considering actually passes. Be strict: "probably" is a no.</p>
+      <div class="gates" id="gates">
+        <label class="gate"><input type="checkbox" data-g="1"><b>Volume: a repeated decision or document, at scale</b><span>Roughly 1,000 or more instances a month, or fewer but very expensive ones (a commercial loan file, a complex appeal). One-off analysis rarely pays back the integration and governance work.</span></label>
+        <label class="gate"><input type="checkbox" data-g="2"><b>Baseline: a metric someone measures today</b><span>Handle time, backlog age, error rate, write-off amount or SLA breaches. Without a baseline there is no before-and-after, and without that there's no renewal story.</span></label>
+        <label class="gate"><input type="checkbox" data-g="3"><b>Data: reachable under governance</b><span>The data can be accessed with its PHI or PII classification, BAA coverage, residency rules and model risk requirements (SR 11-7 in banking) already understood. "We'll figure out access later" is how PoCs die in month two.</span></label>
+        <label class="gate"><input type="checkbox" data-g="4"><b>Tolerance: an acceptable error rate and a human fallback</b><span>The business can state how wrong the system may be and who reviews what it isn't sure of. Fully autonomous adverse decisions, like credit denials or clinical diagnoses, fail this gate by design.</span></label>
+        <label class="gate"><input type="checkbox" data-g="5"><b>Owner: a named leader who feels the pain and holds budget</b><span>Someone accountable for the metric in gate 2 who can fund a follow-on. An enthusiastic engineer without a sponsor is a hackathon, not an expansion.</span></label>
+      </div>
+      <div class="verdict" id="verdict" aria-live="polite"><span class="k">0 of 5 gates</span><p>Park it. This is AI for the sake of AI until it clears at least four gates.</p></div>
+
+      <h4 class="sub">Red flags that mean "AI for the sake of AI"</h4>
+      <ul class="items two">
+        <li class="item"><b>Solution-first language</b><p>"We need a chatbot" or "we need an agent" with no workflow attached. Ask what the chatbot would stop a person from doing; if nobody can answer, there's no use case yet.</p></li>
+        <li class="item"><b>Board-driven urgency</b><p>"Leadership wants an AI announcement this quarter." Real, but it optimizes for a press release, not a metric. Steer it toward the quick win that will also make a good announcement.</p></li>
+        <li class="item"><b>No data owner</b><p>Everyone agrees the data is valuable and nobody can approve access to it. Until a steward signs off, the project is a governance initiative, not an AI one.</p></li>
+        <li class="item"><b>A deterministic problem</b><p>The task has exact rules and exact answers, like reconciling two ledgers. Traditional code is cheaper, faster and auditable; recommending it builds more trust than an LLM ever would.</p></li>
+      </ul>
+
+      <h4 class="sub">The 2×2 prioritization strategy</h4>
+      <p>Score each surviving idea 1 to 5 on both axes, then plot it (the matrix at the top of this page shows typical placements).</p>
+      <div class="tbl-wrap"><table class="t">
+        <thead><tr><th>Axis</th><th>What to score</th><th>Where the evidence comes from</th></tr></thead>
+        <tbody>
+          <tr><th style="--c:var(--yellow)">Business impact</th><td><strong>Annual dollar value</strong> (volume × unit cost × improvement), <strong>risk reduced</strong> (audit findings, regulatory exposure, patient or customer harm) and <strong>strategic fit</strong> with the executive agenda.</td><td>Ops dashboards, SLA reports, finance's cost-per-transaction, last audit findings, the CEO's annual priorities.</td></tr>
+          <tr><th style="--c:var(--cyan)">Implementation feasibility</th><td><strong>Data readiness</strong> (labeled, accessible, governed), <strong>integration complexity</strong> (APIs versus mainframe screens), <strong>regulatory risk</strong> (human-in-the-loop possible?) and <strong>team capacity</strong>.</td><td>Your own repo and architecture knowledge, which is exactly the edge an embedded engineer has over a sales team.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="quads" style="margin-top:12px">
+        <div class="quad" style="--c:var(--green)"><b>Quick wins</b><small>high impact · high feasibility</small><p>Pitch these first. One delivered quick win is what earns you the right to propose a strategic bet; it becomes the reference story in every later conversation.</p></div>
+        <div class="quad" style="--c:var(--purple)"><b>Strategic bets</b><small>high impact · low feasibility</small><p>Don't pitch the whole thing. Pitch the feasibility unlock, such as the governed data pipeline or the eval harness, as a scoped phase one that a quick win can fund.</p></div>
+        <div class="quad" style="--c:var(--cyan)"><b>Fill-ins</b><small>low impact · high feasibility</small><p>Bundle these into a larger engagement or hand them to the customer's own team with a reference implementation. Leading with them makes you look small.</p></div>
+        <div class="quad" style="--c:var(--pink)"><b>Money pits</b><small>low impact · low feasibility</small><p>Talk the customer out of these, out loud and with reasons. Killing a bad idea they were excited about is the most trust-building thing an FDE can do.</p></div>
+      </div>
+    </div>
+  </details>
+
+  <!-- Soft pitch -->
+  <details class="block" id="pitch" style="--c:var(--green)">
+    <summary>
+      <span class="block-meta">phase 3 · the soft pitch &amp; proposal</span>
+      <h3>Pitching as an embedded peer, not a vendor</h3>
+      <span class="toggle"><span class="o">Open</span><span class="c">Close</span></span>
+      <p class="hook">The goal isn't to close anything. It's to make a small, specific, low-risk next step feel obvious to the person who owns the problem, then bring your account team in so commercial details never come from you.</p>
+    </summary>
+    <div class="block-body">
+      <h4 class="sub">Step by step</h4>
+      <ol class="steps" style="--c:var(--green)">
+        <li><b>Earn the observation</b><p>Ship what you were brought in to ship. The pitch rides on delivered trust; raise it in the same week you closed a hard ticket, while your credibility is at its highest.</p></li>
+        <li><b>Name the pain in their words, with their number</b><p>"Your exception queue averages nine days" beats "AI can improve efficiency." Use their dashboard, their terminology and their units so there's nothing to argue with.</p></li>
+        <li><b>Show, don't deck</b><p>Build a 48-hour spike on synthetic or de-identified data in a sandbox. A working screen with ten real-looking examples beats a slide, and it answers the feasibility question before anyone asks it.</p></li>
+        <li><b>Make it the champion's idea</b><p>Walk the ops director or team lead through it privately first and let them present it upward. A champion who owns the idea fights for budget; one who was pitched at waits.</p></li>
+        <li><b>Shrink the ask</b><p>Propose a two- to four-week PoC with fixed scope, a single success metric agreed up front, explicit exit criteria and no production data until governance signs off. Small asks get approved without procurement drama.</p></li>
+        <li><b>Hand off commercials transparently</b><p>Tell the customer you're looping in your account lead for scoping and pricing, then do it. Your role stays technical, nobody is surprised, and your peer status survives the commercial conversation.</p></li>
+      </ol>
+
+      <h4 class="sub">Reusable templates</h4>
+      <div class="tpl">
+        <div class="tpl-head"><span>slack · dm to the workflow owner</span><button class="copy" type="button">Copy</button></div>
+<pre>Hey <span class="ph">[name]</span>, while fixing the <span class="ph">[intake parser]</span> this week I noticed the <span class="ph">[exception queue]</span> is averaging <span class="ph">[9 days / 600 items a week]</span>. Not sure it's on your radar as a priority, but the extraction approach we just built would probably cover most of those cases.
+
+I put together a rough prototype on de-identified samples. Want 15 minutes Thursday to see it? If it's not useful, no worries at all.</pre>
+      </div>
+      <div class="tpl">
+        <div class="tpl-head"><span>email · proposing a low-risk PoC</span><button class="copy" type="button">Copy</button></div>
+<pre>Subject: 3-week PoC idea for <span class="ph">[prior-auth intake]</span> (no production data)
+
+Hi <span class="ph">[name]</span>,
+
+Following our chat on <span class="ph">[day]</span>: your team reviews about <span class="ph">[12,000]</span> <span class="ph">[prior-auth packets]</span> a month at roughly <span class="ph">[18]</span> minutes each, and <span class="ph">[the backlog peaks at month-end]</span>.
+
+What I'd suggest is a small proof of concept:
+- Scope: <span class="ph">[summarize packets against payer criteria for reviewers; humans still decide]</span>
+- Data: <span class="ph">[200 de-identified historical cases]</span> in a sandbox, nothing from production until your governance review signs off
+- Success metric: <span class="ph">[review time under 8 minutes with no drop in accuracy vs. reviewer decisions]</span>
+- Timeline: 3 weeks, with a go or no-go readout at the end
+
+If it doesn't hit the metric, we stop and you keep the evaluation set and findings. I've copied <span class="ph">[account lead]</span>, who can handle scoping and any commercial questions so I can stay focused on the build.
+
+Happy to walk your team through the prototype first if that's useful.
+
+<span class="ph">[your name]</span></pre>
+      </div>
+    </div>
+  </details>
+
+  </div>
+</section>
+
+<!-- =================== UPSELLING VIA ENGINEERING =================== -->
+<section class="part up" id="upsell">
+  <div class="part-head">
+    <p class="kicker">upsell_via_engineering · triggers, phrasing, patterns</p>
+    <h2>Upselling via engineering</h2>
+    <p>Expansion revenue that an engineer finds is different from expansion a salesperson pitches: it starts in a stack trace, a load test or a queue report, and it arrives with evidence. Here's how to notice it, say it, and pass it on without ever sounding like you're selling.</p>
+  </div>
+
+  <div class="blocks">
+
+  <details class="block" id="up-pattern" style="--c:var(--yellow)" open>
+    <summary>
+      <span class="block-meta">the pattern · observe → quantify → prototype → socialize → hand off</span>
+      <h3>From signal to statement of work</h3>
+      <span class="toggle"><span class="o">Open</span><span class="c">Close</span></span>
+      <p class="hook">Every organic expansion follows the same five moves. Skipping quantify makes you sound like an enthusiast; skipping hand off makes you sound like a salesperson.</p>
+    </summary>
+    <div class="block-body">
+      <figure class="diagram panel">
+        <div class="panel-head"><i style="background:var(--pink)"></i><i style="background:var(--yellow)"></i><i style="background:var(--green)"></i><span class="fname">expansion_pipeline.mmd</span></div>
+        <div class="panel-scroll">
+          <svg viewBox="0 0 1000 260" role="img" aria-labelledby="epT epD">
+            <title id="epT">Signal to expansion pipeline</title>
+            <desc id="epD">Five stages: observe, quantify, prototype, socialize, and hand off, with a loop from hand off back to observe because each delivered win becomes the next reference story.</desc>
+            <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#c1b8c8"/></marker></defs>
+            <g font-family="Outfit, sans-serif">
+              <g><rect x="15" y="40" width="175" height="100" rx="10" fill="#332f34" stroke="#ffd866" stroke-width="1.5"/><text x="102" y="74" text-anchor="middle" fill="#ffd866" font-family="Raleway, sans-serif" font-weight="700" font-size="18">Observe</text><text x="102" y="98" text-anchor="middle" fill="#c1b8c8" font-size="13.5">code, tickets, logs</text><text x="102" y="118" text-anchor="middle" fill="#c1b8c8" font-size="13.5">while doing the job</text></g>
+              <g><rect x="211" y="40" width="175" height="100" rx="10" fill="#332f34" stroke="#78dce8" stroke-width="1.5"/><text x="298" y="74" text-anchor="middle" fill="#78dce8" font-family="Raleway, sans-serif" font-weight="700" font-size="18">Quantify</text><text x="298" y="98" text-anchor="middle" fill="#c1b8c8" font-size="13.5">their metric, their units</text><text x="298" y="118" text-anchor="middle" fill="#c1b8c8" font-size="13.5">baseline + $ estimate</text></g>
+              <g><rect x="407" y="40" width="175" height="100" rx="10" fill="#332f34" stroke="#ab9df2" stroke-width="1.5"/><text x="494" y="74" text-anchor="middle" fill="#ab9df2" font-family="Raleway, sans-serif" font-weight="700" font-size="18">Prototype</text><text x="494" y="98" text-anchor="middle" fill="#c1b8c8" font-size="13.5">48-hour spike</text><text x="494" y="118" text-anchor="middle" fill="#c1b8c8" font-size="13.5">de-identified data</text></g>
+              <g><rect x="603" y="40" width="175" height="100" rx="10" fill="#332f34" stroke="#a9dc76" stroke-width="1.5"/><text x="690" y="74" text-anchor="middle" fill="#a9dc76" font-family="Raleway, sans-serif" font-weight="700" font-size="18">Socialize</text><text x="690" y="98" text-anchor="middle" fill="#c1b8c8" font-size="13.5">champion first, 1:1</text><text x="690" y="118" text-anchor="middle" fill="#c1b8c8" font-size="13.5">they present upward</text></g>
+              <g><rect x="799" y="40" width="186" height="100" rx="10" fill="#332f34" stroke="#fc9867" stroke-width="1.5"/><text x="892" y="74" text-anchor="middle" fill="#fc9867" font-family="Raleway, sans-serif" font-weight="700" font-size="18">Hand off</text><text x="892" y="98" text-anchor="middle" fill="#c1b8c8" font-size="13.5">account lead scopes</text><text x="892" y="118" text-anchor="middle" fill="#c1b8c8" font-size="13.5">PoC → SOW → expand</text></g>
+              <line x1="190" y1="90" x2="208" y2="90" stroke="#c1b8c8" stroke-width="1.5" marker-end="url(#ah)"/>
+              <line x1="386" y1="90" x2="404" y2="90" stroke="#c1b8c8" stroke-width="1.5" marker-end="url(#ah)"/>
+              <line x1="582" y1="90" x2="600" y2="90" stroke="#c1b8c8" stroke-width="1.5" marker-end="url(#ah)"/>
+              <line x1="778" y1="90" x2="796" y2="90" stroke="#c1b8c8" stroke-width="1.5" marker-end="url(#ah)"/>
+              <path d="M892 140 L892 200 L102 200 L102 146" fill="none" stroke="#a9dc76" stroke-width="1.5" stroke-dasharray="5 5" marker-end="url(#ah)"/>
+              <text x="497" y="224" text-anchor="middle" fill="#a9dc76" font-size="14">each delivered win becomes the reference story for the next signal</text>
+              <text x="102" y="26" text-anchor="middle" fill="#78dce8" font-family="IBM Plex Mono, monospace" font-size="11.5">you, solo</text>
+              <text x="494" y="26" text-anchor="middle" fill="#78dce8" font-family="IBM Plex Mono, monospace" font-size="11.5">you + 1 engineer</text>
+              <text x="892" y="26" text-anchor="middle" fill="#78dce8" font-family="IBM Plex Mono, monospace" font-size="11.5">account team</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption class="dg-cap">The left three stages are engineering work the customer would value even if nothing were ever bought, and that is the point: if the expansion doesn't happen, they still got a measurement and a prototype from you.</figcaption>
+      </figure>
+
+      <h4 class="sub">Five sentence frames that keep you a peer</h4>
+      <div class="tbl-wrap"><table class="t">
+        <thead><tr><th>Move</th><th>Say it like this</th><th>Why it works</th></tr></thead>
+        <tbody>
+          <tr><th style="--c:var(--yellow)">Observe</th><td class="say">"While I was [fixing the intake parser], I noticed [the exception queue never shrinks]."</td><td>Anchors the idea in work they asked you to do, so it reads as a by-product of diligence rather than an agenda.</td></tr>
+          <tr><th style="--c:var(--cyan)">Quantify</th><td class="say">"By my rough count that's [140 analyst hours] a week. Does that match what you see?"</td><td>Uses their units and invites correction. Being corrected on a number is fine; it means they're now engaged with the problem.</td></tr>
+          <tr><th style="--c:var(--pink)">Exit</th><td class="say">"I don't know if it's a priority for you right now."</td><td>Removes pressure. Stakeholders lean in when they're given permission to say no.</td></tr>
+          <tr><th style="--c:var(--purple)">Offer to show</th><td class="say">"Want me to show you what it does on [a dozen de-identified samples]?"</td><td>An offer to show is an engineering request; an offer to sell is a commercial one. Only the first fits your role.</td></tr>
+          <tr><th style="--c:var(--orange)">Hand off</th><td class="say">"I'll pull in [account lead] for scoping so I can stay on the build."</td><td>Puts commercial talk where it belongs, openly. Your technical judgment stays uncontaminated by quota in the customer's eyes.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </details>
+
+  <details class="block" id="up-triggers" style="--c:var(--yellow)" open>
+    <summary>
+      <span class="block-meta">triggers · what you see → what you say → what it opens</span>
+      <h3>Eight triggers and the exact words for each</h3>
+      <span class="toggle"><span class="o">Open</span><span class="c">Close</span></span>
+      <p class="hook">Each trigger is something you'll run into in the normal course of engineering work. The quoted line is a starting script; swap in their numbers and their nouns.</p>
+    </summary>
+    <div class="block-body">
+      <div class="trig">
+        <div class="tg" style="--c:var(--purple)">
+          <div class="tg-top"><b>Data silos</b><span class="opens">opens: governed retrieval layer, new data connectors</span></div>
+          <p class="see">You find the same entity (a member, a customer, a provider) joined across three or more systems through nightly CSV drops, and the copilot you deployed can only see one of them. Users ask it questions it structurally can't answer, and the logs show it.</p>
+          <p class="line">The claims and member data never meet until the overnight batch, so the assistant can't answer "why was this denied" questions. I sketched how a governed retrieval layer could let it see both. Want me to show you which questions it would answer that it can't today?</p>
+          <p class="why">Pull the unanswered-question log from your own deployment. It is the most persuasive evidence you will ever have because it's their users asking.</p>
+        </div>
+        <div class="tg" style="--c:var(--cyan)">
+          <div class="tg-top"><b>Scale limits</b><span class="opens">opens: provisioned throughput, higher tier, capacity planning</span></div>
+          <p class="see">Your load test at peak volume (open enrollment, month-end close, tax season) shows 429 rate-limit errors or p95 latency climbing past what a live agent can tolerate. Today is fine; the calendar says it won't be.</p>
+          <p class="line">We're comfortable at current volume, but I load-tested at open-enrollment levels and p95 goes to about 9 seconds. Worth talking about capacity in September rather than during November?</p>
+          <p class="why">Framing it as risk avoidance on a known date makes the conversation urgent without any pressure from you.</p>
+        </div>
+        <div class="tg" style="--c:var(--orange)">
+          <div class="tg-top"><b>Manual process bottlenecks</b><span class="opens">opens: a second use case on the same platform</span></div>
+          <p class="see">The workflow next to yours still runs on people reading documents and re-keying fields, and you can see the queue from where you sit. You've already built the extraction or retrieval piece that would cover most of it.</p>
+          <p class="line">I timed the exception queue: about 14 minutes per item and 600 items a week, so roughly 140 analyst hours. I don't know if it's a priority, but the extraction we built for intake would cover most of those cases.</p>
+          <p class="why">Reuse is the key word. The second use case costs a fraction of the first, which is exactly what makes it an easy approval.</p>
+        </div>
+        <div class="tg" style="--c:var(--green)">
+          <div class="tg-top"><b>Another team asks for your code</b><span class="opens">opens: enterprise-wide rollout, shared platform license</span></div>
+          <p class="see">Fraud ops or care management asks if they can fork your repo or "borrow the pipeline." Forks drift, lose their guardrails and become ungoverned shadow deployments within a quarter.</p>
+          <p class="line">Risk ops asked about forking our pipeline. Rather than a copy that drifts away from the guardrails, should we talk about making it a shared service both teams can use?</p>
+          <p class="why">You're protecting governance, which compliance will back, and the natural answer is a wider deployment.</p>
+        </div>
+        <div class="tg" style="--c:var(--pink)">
+          <div class="tg-top"><b>Evaluation and compliance gaps</b><span class="opens">opens: continuous eval, monitoring, model governance module</span></div>
+          <p class="see">Model risk management or a clinical safety committee starts asking how accuracy is measured, and the honest answer is a spreadsheet from launch week. Drift, prompt changes and model upgrades are all unmonitored.</p>
+          <p class="line">Model risk will ask how we know this is still accurate in six months. I'd rather we have the answer before they ask. A continuous evaluation gate on every prompt and model change is a small add on top of what's there.</p>
+          <p class="why">You're giving the customer a defense for an exam they know is coming. That is a gift, and it lands as one.</p>
+        </div>
+        <div class="tg" style="--c:var(--yellow)">
+          <div class="tg-top"><b>Shadow AI</b><span class="opens">opens: governed enterprise AI gateway</span></div>
+          <p class="see">DLP alerts, blocked-domain logs or plain conversation reveal staff pasting customer or patient data into consumer tools to get their work done.</p>
+          <p class="line">I've seen a few teams paste data into public tools to get this done. That tells me the demand is real and so is the risk. A governed version would give security the audit trail they want and give those teams something approved.</p>
+          <p class="why">Never name individuals. Present it as a pattern, and bring security in as a co-sponsor rather than an obstacle.</p>
+        </div>
+        <div class="tg" style="--c:var(--cyan)">
+          <div class="tg-top"><b>Cost creep</b><span class="opens">opens: optimization work, budget freed for the next use case</span></div>
+          <p class="see">Token spend has grown faster than usage because prompts got longer, retrieval returns too much context or every request hits the largest model.</p>
+          <p class="line">Our token spend is up about 3x since launch, mostly from long prompts. Routing simple requests to a smaller model and caching repeat answers should cut that substantially, and it frees budget for the next workflow.</p>
+          <p class="why">Proposing to lower their bill is the most counterintuitive and most trusted move on this list. It reliably turns into a "what should we do with the savings" conversation.</p>
+        </div>
+        <div class="tg" style="--c:var(--green)">
+          <div class="tg-top"><b>Success metric exceeded</b><span class="opens">opens: replicate the pattern across queues or lines of business</span></div>
+          <p class="see">The PoC or first deployment beats its target ahead of schedule and the champion is visibly pleased.</p>
+          <p class="line">We hit the 30% handle-time target in week six. Want to look at which other queues have the same shape as this one?</p>
+          <p class="why">Ask in the same meeting as the good news. The moment of success is when the next scope is cheapest to agree on.</p>
+        </div>
+      </div>
+
+      <h4 class="sub">Word swaps</h4>
+      <div class="swap">
+        <div class="no hd">Sounds like sales</div><div class="yes hd">Sounds like a peer</div>
+        <div class="no">"Our product can also…"</div><div class="yes">"I noticed something while fixing…"</div>
+        <div class="no">"You should really invest in…"</div><div class="yes">"Want me to sketch what that would look like?"</div>
+        <div class="no">"Massive ROI opportunity"</div><div class="yes">"About 140 hours a week back for your reviewers"</div>
+        <div class="no">"Let's get a deal in before quarter end"</div><div class="yes">"Worth sorting before open enrollment?"</div>
+        <div class="no">"It's only $X for the upgrade"</div><div class="yes">"I'll pull in our account lead for the scoping side"</div>
+        <div class="no">"Best-in-class, cutting-edge AI"</div><div class="yes">"It got 186 of 200 test cases right; here are the 14 it missed"</div>
+      </div>
+
+      <div class="callout">
+        <b>Lines you never cross</b>
+        <ul>
+          <li>Never hold back a fix, slow a delivery or leave a limitation unaddressed to create a need. The moment a customer suspects it, every future recommendation is discounted.</li>
+          <li>Never quote price or negotiate. It changes how every technical opinion you give is heard, retroactively.</li>
+          <li>Never inflate a number. Give ranges, say "rough count," and show your math; a conservative estimate that's beaten is worth more than a big one that isn't.</li>
+          <li>Recommend the cheaper path, including no AI at all, when it's the right answer. Expansion only lasts when the customer is genuinely better off.</li>
+        </ul>
+      </div>
+    </div>
+  </details>
+
+  </div>
+</section>
+
+<!-- =================== PART 2 =================== -->
+<section class="part" id="part2">
+  <div class="part-head">
+    <p class="kicker">part_2 · developer × architect × consultant</p>
+    <h2>The triple-threat skill mix matrix</h2>
+    <p>A principal FDE switches between three personas several times a day, often in the same meeting. The skill isn't being all three at once; it's knowing which one the moment needs and noticing when you've over-indexed on one.</p>
+  </div>
+
+  <div class="blocks">
+
+  <details class="block" id="roles" style="--c:var(--purple)" open>
+    <summary>
+      <span class="block-meta">role integration table</span>
+      <h3>Three personas, one engineer</h3>
+      <span class="toggle"><span class="o">Open</span><span class="c">Close</span></span>
+      <p class="hook">Each persona has a superpower that wins accounts and a failure mode that loses them. The failure mode almost always comes from staying in one persona after the moment has moved on.</p>
+    </summary>
+    <div class="block-body">
+      <div class="tbl-wrap"><table class="t">
+        <thead><tr><th>Skill persona</th><th>Core responsibilities</th><th>High-value FDE superpower</th><th>Common failure mode (if over-indexed)</th></tr></thead>
+        <tbody>
+          <tr><th style="--c:var(--c-dev)">The pragmatic software developer</th><td>Ship production code inside the customer's environment, integrate with their APIs and identity stack, harden the MVP, and own on-site debugging under deadline.</td><td><strong>Turns ambiguity into a working demo in days.</strong> Credibility with the customer's engineers comes from code that runs on their infrastructure, not from slides.</td><td class="fail">Heroic one-off patches nobody else can maintain, bespoke forks that never fold back into the product, and a habit of solving the ticket without asking why it exists.</td></tr>
+          <tr><th style="--c:var(--c-arch)">The strategic solutions architect</th><td>Map the legacy estate to a target topology, choose integration patterns, define non-functional requirements (security, latency, residency, audit), and keep customer work aligned with the core product.</td><td><strong>Draws the diagram the CIO takes into the budget meeting.</strong> A clear target state turns a single use case into a roadmap, and a roadmap into multi-year scope.</td><td class="fail">Ivory-tower diagrams disconnected from what can ship this quarter, boil-the-ocean replatforming proposals, and designs that ignore the customer team's actual skills.</td></tr>
+          <tr><th style="--c:var(--c-biz)">The trusted business consultant</th><td>Uncover the business pain behind the request, map technical metrics to dollar impact, align executives, compliance and operations, and frame decisions in terms of risk and return.</td><td><strong>Converts p95 latency into a number the CFO repeats.</strong> Executives fund the engineer who explains the business case better than their own team did.</td><td class="fail">Slideware without shipping, over-promising timelines to please a sponsor, and losing credibility with the customer's engineers, who stop seeing you as one of them.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </details>
+
+  <!-- Developer -->
+  <details class="block" id="dev" style="--c:var(--c-dev)">
+    <summary>
+      <span class="block-meta">persona · the pragmatic software developer</span>
+      <h3>Shipping under customer-site pressure</h3>
+      <span class="toggle"><span class="o">Open</span><span class="c">Close</span></span>
+      <p class="hook">You're writing code in someone else's house, under their change control, with their compliance team watching. The rules below keep you fast without leaving a mess behind when you roll off.</p>
+    </summary>
+    <div class="block-body">
+      <h4 class="sub">Managing codebases under deployment pressure</h4>
+      <ul class="items">
+        <li class="item"><b>Keep customer logic in adapters, never in the core</b><p>Everything customer-specific (their EHR field mappings, their core banking API quirks) lives in a thin adapter layer that talks to the product through its public interfaces. When the next release ships, you upgrade the core and re-test adapters instead of hand-merging a fork.</p></li>
+        <li class="item"><b>Thin vertical slices behind feature flags</b><p>Ship one end-to-end path (one document type, one queue, one user group) to production early, flagged off for everyone but pilot users. Change-advisory boards approve small, reversible changes far faster than big-bang releases.</p></li>
+        <li class="item"><b>Version prompts, models and retrieval config like code</b><p>Prompts live in a registry with versions, model IDs are pinned, and every eval result is tied to the exact commit, prompt version and model version. When accuracy drops in week five, you can say exactly what changed instead of guessing.</p></li>
+        <li class="item"><b>An eval gate in CI from the first week</b><p>A small golden set of 50 to 200 cases, built with the customer's subject-matter experts, runs on every merge. It catches regressions and becomes the evidence model risk and clinical safety reviewers ask for later.</p></li>
+      </ul>
+
+      <h4 class="sub">Optimizing APIs on-site</h4>
+      <ul class="items two">
+        <li class="item"><b>Measure before touching anything</b><p>Instrument p50, p95 and p99 per hop (retrieval, model call, tool calls, post-processing) with OpenTelemetry traces. The slow part is rarely where people assume, and the trace becomes your before-and-after evidence.</p></li>
+        <li class="item"><b>Parallelize and stream</b><p>Run independent tool calls and retrievals concurrently, and stream tokens to the UI so the first useful words appear in under a second. Perceived latency matters as much as total latency for a live agent or nurse.</p></li>
+        <li class="item"><b>Cache and route</b><p>Semantic caching for repeated questions, prompt caching for long static system prompts, and a router that sends simple classification work to a smaller model. These cut both latency and cost-to-serve.</p></li>
+        <li class="item"><b>Go async for long documents</b><p>A 600-page loan file or a full medical record should be a queued job with idempotency keys and status polling, not a synchronous request that times out at the load balancer.</p></li>
+      </ul>
+
+      <h4 class="sub">Building MVPs that stay stable</h4>
+      <ul class="items">
+        <li class="item"><b>One workflow, real users, real (governed) data</b><p>An MVP proves value in one workflow with real users. A demo on toy data proves nothing to a skeptical operations leader, and it hides the integration problems that will dominate the real project.</p></li>
+        <li class="item"><b>Human-in-the-loop by design, not as an afterthought</b><p>Confidence thresholds route uncertain outputs to a review queue, and reviewer corrections feed the eval set. In regulated workflows this is what gets you through compliance review, and it gives you labeled data for free.</p></li>
+        <li class="item"><b>Leave a runbook and an owner</b><p>Every MVP ships with a runbook (alerts, common failures, rollback steps) and a named customer engineer who has fixed at least one bug in it themselves. If it only works while you're on site, it isn't stable.</p></li>
+      </ul>
+    </div>
+  </details>
+
+  <!-- Architect -->
+  <details class="block" id="arch" style="--c:var(--c-arch)">
+    <summary>
+      <span class="block-meta">persona · the strategic solutions architect</span>
+      <h3>From legacy mess to a scalable topology</h3>
+      <span class="toggle"><span class="o">Open</span><span class="c">Close</span></span>
+      <p class="hook">You won't replace the mainframe, and you shouldn't try. The architect's job is to wrap the legacy estate in a governed data layer and route one workflow at a time into the AI runtime, so each step ships value on its own.</p>
+    </summary>
+    <div class="block-body">
+      <figure class="diagram panel">
+        <div class="panel-head"><i style="background:var(--pink)"></i><i style="background:var(--yellow)"></i><i style="background:var(--green)"></i><span class="fname">target_topology.mmd</span></div>
+        <div class="panel-scroll">
+          <svg viewBox="0 0 1000 470" role="img" aria-labelledby="ttT ttD">
+            <title id="ttT">Target topology for a regulated enterprise AI deployment</title>
+            <desc id="ttD">Legacy systems on the left feed a governed data layer in the middle through adapters, which feeds the AI runtime on the right through governed APIs. A shared observability and audit layer spans all three.</desc>
+            <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#c1b8c8"/></marker></defs>
+            <g font-family="Outfit, sans-serif" font-size="14" text-anchor="middle">
+              <!-- legacy -->
+              <rect x="15" y="20" width="255" height="330" rx="12" fill="rgba(255,97,136,.05)" stroke="rgba(255,97,136,.5)" stroke-dasharray="5 4"/>
+              <text x="142" y="50" fill="#ff6188" font-family="Raleway, sans-serif" font-weight="700" font-size="17">Legacy estate</text>
+              <rect x="35" y="70" width="215" height="54" rx="8" fill="#332f34" stroke="rgba(255,255,255,.13)"/><text x="142" y="102" fill="#fcfcfa">Mainframe rules engine</text>
+              <rect x="35" y="136" width="215" height="54" rx="8" fill="#332f34" stroke="rgba(255,255,255,.13)"/><text x="142" y="168" fill="#fcfcfa">Core banking · EHR</text>
+              <rect x="35" y="202" width="215" height="54" rx="8" fill="#332f34" stroke="rgba(255,255,255,.13)"/><text x="142" y="234" fill="#fcfcfa">SharePoint · fax · PDFs</text>
+              <rect x="35" y="268" width="215" height="54" rx="8" fill="#332f34" stroke="rgba(255,255,255,.13)"/><text x="142" y="300" fill="#fcfcfa">Excel macros · RPA bots</text>
+              <!-- governed data layer -->
+              <rect x="330" y="20" width="290" height="330" rx="12" fill="rgba(171,157,242,.06)" stroke="rgba(171,157,242,.6)"/>
+              <text x="475" y="50" fill="#ab9df2" font-family="Raleway, sans-serif" font-weight="700" font-size="17">Governed data layer</text>
+              <rect x="350" y="70" width="250" height="54" rx="8" fill="#332f34" stroke="rgba(255,255,255,.13)"/><text x="475" y="102" fill="#fcfcfa">CDC + event stream (Kafka)</text>
+              <rect x="350" y="136" width="250" height="54" rx="8" fill="#332f34" stroke="rgba(255,255,255,.13)"/><text x="475" y="168" fill="#fcfcfa">Document AI extraction</text>
+              <rect x="350" y="202" width="250" height="54" rx="8" fill="#332f34" stroke="rgba(255,255,255,.13)"/><text x="475" y="234" fill="#fcfcfa">PII / PHI redaction + tagging</text>
+              <rect x="350" y="268" width="250" height="54" rx="8" fill="#332f34" stroke="rgba(255,255,255,.13)"/><text x="475" y="300" fill="#fcfcfa">Lakehouse + vector DB</text>
+              <!-- runtime -->
+              <rect x="680" y="20" width="305" height="330" rx="12" fill="rgba(120,220,232,.06)" stroke="rgba(120,220,232,.6)"/>
+              <text x="832" y="50" fill="#78dce8" font-family="Raleway, sans-serif" font-weight="700" font-size="17">AI runtime (core product)</text>
+              <rect x="700" y="70" width="265" height="54" rx="8" fill="#332f34" stroke="rgba(255,255,255,.13)"/><text x="832" y="102" fill="#fcfcfa">Model gateway · routing · cache</text>
+              <rect x="700" y="136" width="265" height="54" rx="8" fill="#332f34" stroke="rgba(255,255,255,.13)"/><text x="832" y="168" fill="#fcfcfa">LLM orchestration · agents · MCP tools</text>
+              <rect x="700" y="202" width="265" height="54" rx="8" fill="#332f34" stroke="rgba(255,255,255,.13)"/><text x="832" y="234" fill="#fcfcfa">Guardrails + eval gate</text>
+              <rect x="700" y="268" width="265" height="54" rx="8" fill="#332f34" stroke="rgba(255,255,255,.13)"/><text x="832" y="300" fill="#fcfcfa">Human review queue</text>
+              <!-- arrows -->
+              <line x1="272" y1="185" x2="326" y2="185" stroke="#c1b8c8" stroke-width="2" marker-end="url(#ah2)"/>
+              <text x="299" y="175" font-family="IBM Plex Mono, monospace" font-size="11" fill="#c1b8c8">adapters</text>
+              <line x1="622" y1="185" x2="676" y2="185" stroke="#c1b8c8" stroke-width="2" marker-end="url(#ah2)"/>
+              <text x="649" y="175" font-family="IBM Plex Mono, monospace" font-size="11" fill="#c1b8c8">APIs</text>
+              <!-- band -->
+              <line x1="142" y1="350" x2="142" y2="385" stroke="#a9dc76" stroke-dasharray="4 4"/>
+              <line x1="475" y1="350" x2="475" y2="385" stroke="#a9dc76" stroke-dasharray="4 4"/>
+              <line x1="832" y1="350" x2="832" y2="385" stroke="#a9dc76" stroke-dasharray="4 4"/>
+              <rect x="15" y="385" width="970" height="64" rx="10" fill="rgba(169,220,118,.07)" stroke="rgba(169,220,118,.55)"/>
+              <text x="500" y="412" fill="#a9dc76" font-family="Raleway, sans-serif" font-weight="700" font-size="16">Observability · audit log · lineage</text>
+              <text x="500" y="434" fill="#c1b8c8" font-size="13.5">traces per request · data catalog (Unity Catalog / Purview) · model risk documentation · access reviews</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption class="dg-cap">Read it left to right as a strangler-fig migration: each new workflow gets an adapter, flows through the governed layer, and lands in the runtime. The legacy system stays the system of record; the observability band is what makes the whole thing defensible in an audit.</figcaption>
+      </figure>
+
+      <h4 class="sub">Legacy-to-target framework mappings</h4>
+      <div class="tbl-wrap"><table class="t">
+        <thead><tr><th>Legacy pattern</th><th>Target pattern</th><th>How to sell it internally</th></tr></thead>
+        <tbody>
+          <tr><th>Hand-tuned rules engine</th><td><strong>Hybrid: rules as guardrails, model for the ambiguous middle.</strong> Rules keep enforcing hard regulatory constraints; a classifier or LLM triage handles the cases rules keep getting wrong.</td><td>"Nothing your auditors rely on goes away. We're adding a layer for the cases that currently go to manual review."</td></tr>
+          <tr><th>Nightly batch ETL and CSV drops</th><td><strong>Change data capture into a lakehouse</strong> (Debezium or native CDC into Kafka, landing in Delta or Iceberg tables), so AI features see hours-fresh data instead of yesterday's.</td><td>"Your assistant stops answering with yesterday's balances and statuses."</td></tr>
+          <tr><th>Keyword intranet search</th><td><strong>Hybrid retrieval</strong>: BM25 plus vector search plus a cross-encoder reranker, with document-level access control enforced at query time.</td><td>"People find the right policy on the first try, and only see documents they're already entitled to."</td></tr>
+          <tr><th>Point-to-point integrations</th><td><strong>A tool layer behind a gateway</strong> (MCP servers or internal APIs) with scoped credentials per agent and per action, logged centrally.</td><td>"Every action the AI takes is permissioned and logged the same way a human's would be."</td></tr>
+          <tr><th>Prompts hard-coded in apps</th><td><strong>Prompt registry and model gateway</strong> with versioning, A/B routing and rollback, so changes go through review rather than a code deploy.</td><td>"You can change model providers or prompts without redeploying the app, and every change is traceable."</td></tr>
+          <tr><th>Manual QA by spot-check</th><td><strong>Eval harness as a release gate</strong>: golden sets, LLM-as-judge with human calibration, groundedness checks, run on every change.</td><td>"Here's the evidence package for your model risk or clinical safety review, generated automatically."</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </details>
+
+  <!-- Consultant -->
+  <details class="block" id="consult" style="--c:var(--c-biz)">
+    <summary>
+      <span class="block-meta">persona · the trusted business consultant</span>
+      <h3>Pain, dollars and executive navigation</h3>
+      <span class="toggle"><span class="o">Open</span><span class="c">Close</span></span>
+      <p class="hook">Technical metrics only matter to an executive once they become money, risk or time. The consultant's job is to make that translation credible, then put it in front of the right person in the right order.</p>
+    </summary>
+    <div class="block-body">
+      <h4 class="sub">The pain ladder</h4>
+      <p>Climb one rung at a time in conversation. Stopping early is the most common mistake: a symptom isn't a business case, and a dollar figure without an owner doesn't get funded.</p>
+      <ol class="steps" style="--c:var(--green)">
+        <li><b>Symptom</b><p>What people complain about: "the queue is always behind," "we get the same question 50 times a day."</p></li>
+        <li><b>Process</b><p>Where in the workflow it happens, and which step creates it. Walk it with the person who does it; screenshare beats interviews.</p></li>
+        <li><b>Metric</b><p>The number that captures it today: backlog age, handle time, first-pass accuracy, denial overturn rate, write-offs.</p></li>
+        <li><b>Dollars</b><p>Labor cost, penalties, revenue at risk, regulatory exposure. Show your math and use their finance team's unit costs.</p></li>
+        <li><b>Owner</b><p>The executive accountable for that metric in their performance goals. That's your economic buyer, whether or not they're in your meetings yet.</p></li>
+      </ol>
+
+      <h4 class="sub">Mapping technical metrics to ROI</h4>
+      <div class="formula">
+        <span class="c"># annual value of an AI workflow</span><br>
+        <span class="v">value</span> = (<span class="v">volume</span> × <span class="v">minutes_saved</span> × <span class="v">loaded_cost_per_min</span>)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ (<span class="v">errors_avoided</span> × <span class="v">cost_per_error</span>)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="v">revenue_protected</span> <span class="c"># churn, SLA penalties, faster onboarding</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="m">−</span> (<span class="v">inference_cost</span> + <span class="v">platform_cost</span> + <span class="v">human_review_cost</span>)<br><br>
+        <span class="c"># illustrative: prior-auth review at a regional health plan</span><br>
+        12,000 packets/mo × 10 min saved × $1.10/min ≈ <span class="v">$132K/mo</span> ≈ <span class="v">$1.58M/yr</span> gross<br>
+        <span class="m">−</span> inference at ~$0.15/packet ≈ $21.6K/yr <span class="c"># run cost is rarely the problem; review staffing is</span>
+      </div>
+      <p style="color:var(--soft);font-size:15.5px;margin-top:10px">Always present the number as a range with your assumptions visible, and let the customer's finance partner adjust the inputs. A number they edited is a number they own.</p>
+
+      <h4 class="sub">Navigating executive stakeholders</h4>
+      <div class="tbl-wrap"><table class="t">
+        <thead><tr><th>Stakeholder</th><th>What they care about</th><th>How to engage</th></tr></thead>
+        <tbody>
+          <tr><th style="--c:var(--yellow)">Economic buyer (COO, CFO, line-of-business head)</th><td>Cost-to-serve, growth, the metric in their goals this year.</td><td>Fifteen minutes, one page, one number, one ask. Come through your champion, never around them.</td></tr>
+          <tr><th style="--c:var(--pink)">Risk gatekeeper (CCO, CMIO, model risk, privacy)</th><td>Regulatory exposure, patient or customer harm, explainability, audit trail.</td><td>Bring them in early as co-designers. Show the guardrails, the human-in-the-loop path and the eval evidence before they have to ask.</td></tr>
+          <tr><th style="--c:var(--cyan)">Technical owner (CIO, CDO, enterprise architect)</th><td>Integration risk, data ownership, platform sprawl, team capacity.</td><td>Show the target topology and how it reuses their existing platforms. Ask what they'd veto, and design around it.</td></tr>
+          <tr><th style="--c:var(--green)">Champion (ops director, team lead)</th><td>Their team's workload, their own visibility upward.</td><td>Give them the demo and the numbers to present. Make them look good to their boss; it's the best investment you'll make in the account.</td></tr>
+          <tr><th style="--c:var(--orange)">Likely blocker (InfoSec, procurement, a rival initiative)</th><td>Not being surprised, not being made responsible for someone else's risk.</td><td>Brief them before the big meeting, not in it. Ask what they need to say yes and put it in the plan.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </details>
+
+  <!-- Bilingual -->
+  <details class="block" id="bilingual" style="--c:var(--orange)">
+    <summary>
+      <span class="block-meta">bilingual communication playbook</span>
+      <h3>Translating AI constraints into business metrics</h3>
+      <span class="toggle"><span class="o">Open</span><span class="c">Close</span></span>
+      <p class="hook">Executives don't need to understand a context window. They need to know what it does to cost, risk and customers, and what it would take to fix. Lead with the consequence, then the plan, and keep the mechanism for whoever asks.</p>
+    </summary>
+    <div class="block-body">
+      <h4 class="sub">The translation table</h4>
+      <div class="tbl-wrap"><table class="t">
+        <thead><tr><th>Technical constraint</th><th>Business metric it moves</th><th>How to say it</th></tr></thead>
+        <tbody>
+          <tr><th>Context window limits</th><td><strong>Completeness risk and timeline.</strong> Long files (loan packages, full medical records) get truncated unless retrieval is built.</td><td class="say">"The model can read about [N] pages at once. Longer files need a retrieval step, which adds two weeks and makes sure nothing on page 400 gets missed."</td></tr>
+          <tr><th>Latency</th><td><strong>Handle time, abandonment and cost-to-serve.</strong> Seconds of wait time multiply across every interaction.</td><td class="say">"Every second of wait adds up to [N] agent hours a year, and on the IVR it shows up as hang-ups."</td></tr>
+          <tr><th>Hallucinations</th><td><strong>Operational and regulatory risk.</strong> Rate × volume = wrong answers per day that a customer or patient could act on.</td><td class="say">"At today's rate that's about [N] wrong answers a month. Here's how we get it below [target] and catch the rest before anyone sees them."</td></tr>
+          <tr><th>Token and inference cost</th><td><strong>Unit economics: cost per transaction</strong> compared with the fully loaded manual cost.</td><td class="say">"It costs about [15 cents] per case to run, against roughly [$11] for the manual review it replaces."</td></tr>
+          <tr><th>Model drift and version changes</th><td><strong>Audit exposure</strong> and model risk exam findings.</td><td class="say">"When the provider updates the model, accuracy can shift. The eval gate is how we prove to examiners it didn't."</td></tr>
+          <tr><th>Rate limits and throughput</th><td><strong>Capacity ceiling at peak</strong> (open enrollment, month-end, tax season).</td><td class="say">"We're fine at today's volume; at peak we'd hit a ceiling around [N] requests a minute unless we reserve capacity."</td></tr>
+        </tbody>
+      </table></div>
+
+      <h4 class="sub">Before and after: developer versus principal FDE</h4>
+      <p class="ba-title">hallucination · health plan member services</p>
+      <div class="ba">
+        <div class="bef"><span class="lbl">Pure developer</span><p>"The model has a 3% hallucination rate on the eval set. We need better grounding, probably a reranker and stricter citation checks."</p></div>
+        <div class="aft"><span class="lbl">Principal FDE</span><p>"Right now about 3 in 100 answers cite something that isn't in the member's plan. At 20,000 calls a month that's 600 answers a member could act on. Two weeks of grounding work gets it under half a percent, and anything uncertain routes to a nurse, so the risk is contained before go-live."</p></div>
+      </div>
+      <p class="ba-title">latency · bank contact center agent assist</p>
+      <div class="ba">
+        <div class="bef"><span class="lbl">Pure developer</span><p>"p95 is 6.2 seconds because the tool calls run sequentially. We should parallelize them and add a semantic cache."</p></div>
+        <div class="aft"><span class="lbl">Principal FDE</span><p>"Agents wait about six seconds for each suggestion, which adds roughly 40 seconds to a typical call. Across 1.2 million calls a year that's over 13,000 agent hours. One sprint of performance work brings it under two seconds."</p></div>
+      </div>
+      <p class="ba-title">context window · commercial lending credit memos</p>
+      <div class="ba">
+        <div class="bef"><span class="lbl">Pure developer</span><p>"The full loan file doesn't fit in the context window, so we need chunking, embeddings and a retrieval pipeline."</p></div>
+        <div class="aft"><span class="lbl">Principal FDE</span><p>"A full commercial loan file runs about 600 pages, more than the model can read at once. Without a retrieval layer, a memo could miss a covenant on page 412. Building it adds two weeks and makes every statement in the memo traceable to a source page, which credit review will ask for anyway."</p></div>
+      </div>
+    </div>
+  </details>
+
+  <!-- Habits -->
+  <details class="block" id="habits" style="--c:var(--pink)">
+    <summary>
+      <span class="block-meta">high-value habits for embedded engineers</span>
+      <h3>Staying strategic while writing code</h3>
+      <span class="toggle"><span class="o">Open</span><span class="c">Close</span></span>
+      <p class="hook">Deployment pressure pulls every FDE toward pure developer mode. These four habits take under three hours a week and keep the architect and consultant switched on.</p>
+    </summary>
+    <div class="block-body">
+      <div class="habits">
+        <div class="habit" style="--c:var(--cyan)"><span class="when">daily · 10 minutes</span><b>Ticket-to-dollar note</b><p>At the end of each day, write one line per ticket you closed: which business metric it moved, or why it didn't move one. Keep it in a running doc.</p><p>After a month you have a ready-made impact story for the renewal review, and you'll notice which work is busywork worth pushing back on.</p></div>
+        <div class="habit" style="--c:var(--green)"><span class="when">daily · 15 minutes</span><b>Read one non-engineering artifact</b><p>An ops dashboard, an SLA report, a complaint log, a compliance memo or the customer's latest earnings call notes. Pick something your engineering peers never open.</p><p>This is where most expansion signals live, and it teaches you the customer's vocabulary so your proposals sound like they came from inside.</p></div>
+        <div class="habit" style="--c:var(--purple)"><span class="when">weekly · 30 minutes</span><b>Architecture redraw</b><p>Redraw the current topology from memory, then compare with last week's. Mark anything bespoke that should become a product feature, and any new coupling you introduced under pressure.</p><p>Bespoke code you flag this week is a product request; bespoke code you find in six months is tech debt the customer pays for.</p></div>
+        <div class="habit" style="--c:var(--yellow)"><span class="when">weekly · 30 minutes</span><b>Signal review with your account lead</b><p>Bring your signal log, run the strongest one or two through the five gates, and agree on at most one to raise that week.</p><p>One well-qualified idea a week beats five half-baked ones, and the rhythm keeps commercial follow-up with the account team instead of drifting to you.</p></div>
+      </div>
+    </div>
+  </details>
+
+  </div>
+</section>
+
+<p class="empty" id="empty">Nothing matches that search. Try a broader term like "latency," "governance" or "queue."</p>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Principal FDE Playbook · Michael Legemah</span>
+    <a href="https://mleg.tech" target="_blank" rel="noopener">mleg.tech</a>
+  </div>
+</footer>
+
+<script>
+(function () {
+  // signal checklist (per-viewer, browser only)
+  var KEY = 'fde-signals';
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { saved = {}; }
+  var boxes = document.querySelectorAll('#signals input[type=checkbox]');
+  var countEl = document.getElementById('sigCount');
+  function updCount() {
+    var n = 0; boxes.forEach(function (b) { if (b.checked) n++; });
+    countEl.textContent = n + ' of ' + boxes.length + ' signals spotted in this account' + (n >= 3 ? ' · enough to run the five-gate filter' : '');
+    countEl.classList.toggle('hot', n >= 3);
+  }
+  boxes.forEach(function (b) {
+    b.checked = !!saved[b.dataset.k];
+    b.addEventListener('change', function () {
+      saved[b.dataset.k] = b.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {}
+      updCount();
+    });
+  });
+  updCount();
+
+  // five-gate verdict
+  var gates = document.querySelectorAll('#gates input');
+  var verdict = document.getElementById('verdict');
+  var V = [
+    ['var(--pink)', 'Park it. This is AI for the sake of AI until it clears at least four gates.'],
+    ['var(--pink)', 'Park it. This is AI for the sake of AI until it clears at least four gates.'],
+    ['var(--pink)', 'Park it. This is AI for the sake of AI until it clears at least four gates.'],
+    ['var(--orange)', 'Not yet. Log it as a signal and work on the missing gates before anyone hears about it.'],
+    ['var(--yellow)', 'Close. Fix the one missing gate first; usually it is a baseline metric or a named owner, both of which you can get in a single conversation.'],
+    ['var(--green)', 'Pitch it. Plot it on the matrix, build the 48-hour spike, and take it to your champion.']
+  ];
+  function updGates() {
+    var n = 0; gates.forEach(function (g) { if (g.checked) n++; });
+    verdict.style.setProperty('--vc', V[n][0]);
+    verdict.querySelector('.k').textContent = n + ' of 5 gates';
+    verdict.querySelector('p').textContent = V[n][1];
+  }
+  gates.forEach(function (g) { g.addEventListener('change', updGates); });
+  updGates();
+
+  // copy buttons
+  document.querySelectorAll('.tpl .copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.closest('.tpl').querySelector('pre').innerText;
+      function done() { btn.textContent = 'Copied'; btn.classList.add('done'); setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('done'); }, 1600); }
+      function fallback() {
+        var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) { btn.textContent = 'Select text to copy'; }
+        document.body.removeChild(ta);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, fallback); } else { fallback(); }
+    });
+  });
+
+  // expand / collapse all
+  var blocks = Array.prototype.slice.call(document.querySelectorAll('details.block'));
+  var expandBtn = document.getElementById('expandBtn');
+  function syncExpand() { var allOpen = blocks.every(function (b) { return b.open || b.hidden; }); expandBtn.textContent = allOpen ? 'Collapse all' : 'Expand all'; }
+  expandBtn.addEventListener('click', function () {
+    var allOpen = blocks.every(function (b) { return b.open || b.hidden; });
+    blocks.forEach(function (b) { if (!b.hidden) b.open = !allOpen; });
+    syncExpand();
+  });
+  blocks.forEach(function (b) { b.addEventListener('toggle', syncExpand); });
+  syncExpand();
+
+  // open a block when a chip or hash points into it
+  function openForHash() {
+    var id = location.hash.slice(1); if (!id) return;
+    var el = document.getElementById(id); if (!el) return;
+    if (el.tagName === 'DETAILS') el.open = true;
+    var inner = el.querySelector && el.querySelector('details.block'); if (inner) inner.open = true;
+  }
+  window.addEventListener('hashchange', openForHash); openForHash();
+
+  // search
+  var q = document.getElementById('q');
+  var empty = document.getElementById('empty');
+  var parts = document.querySelectorAll('section.part');
+  var openState = null;
+  q.addEventListener('input', function () {
+    var term = q.value.trim().toLowerCase();
+    if (term && !openState) openState = blocks.map(function (b) { return b.open; });
+    var any = false;
+    blocks.forEach(function (b, i) {
+      if (!term) { b.hidden = false; if (openState) b.open = openState[i]; return; }
+      var hit = b.textContent.toLowerCase().indexOf(term) !== -1;
+      b.hidden = !hit; if (hit) { b.open = true; any = true; }
+    });
+    parts.forEach(function (p) { p.hidden = term ? !p.querySelector('details.block:not([hidden])') : false; });
+    if (!term) openState = null;
+    empty.style.display = term && !any ? 'block' : 'none';
+    syncExpand();
+  });
+})();
+</script>
+</body>
+</html>
